@@ -1,0 +1,33 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+on: [push]
+
+jobs:
+  nuclei-scan:
+    runs-on: ubuntu-20.04
+    steps:
+     - name: Checkout
+       uses: actions/checkout@v2
+     - name: Install Node.js 14.x
+       uses: actions/setup-node@v2
+       with:
+         node-version: 14.x
+     - name: Install Dependencies
+       run: npm clean-install
+     - name: Run Application
+       run: nohup npm run start &
+     - name: Perform Scan
+       uses: ShiftLeftSecurity/scan-action@master
+       with:
+         type: "credscan,Node.js,depscan"
+       env:
+         WORKSPACE: https://github.com/${{ github.repository }}/blob/${{ github.sha }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+     - uses: actions/upload-artifact@v1
+       with:
+         name: reports
+         path: reports
+
